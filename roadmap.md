@@ -1,5 +1,5 @@
 # Retail Insights Project — Roadmap
-**Team of 4+ | Instacart Dataset | Streamlit Dashboard**
+**Team of 7 | Instacart Dataset | Streamlit Dashboard**
 
 ---
 
