@@ -57,7 +57,6 @@ retail-insights/
 │   └── algorithm_comparison.csv
 ├── plots/                    ← Auto-generated figures
 ├── app.py                    ← Streamlit dashboard
-├── pipeline.py               ← Full ML pipeline script
 ├── requirements.txt
 └── README.md
 ```
