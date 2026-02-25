@@ -11,10 +11,17 @@ This project analyzes 3M+ grocery orders to provide actionable recommendations f
 - **Promotion ROI** — targeted vs. blanket discounts
 
 ## Quick Start
+🛠️ Step 0: Database Infrastructure
+Before running the code, you must initialize the database:
+
+Open your Supabase SQL Editor.
+Copy and run the contents of database_setup.sql.
+This creates the optimized B-Tree indexes and the product_details view.
 
 ### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
+python pipeline.py
 ```
 
 ### 2. Download dataset
