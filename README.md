@@ -44,7 +44,9 @@ streamlit run app.py
 
 ```
 retail-insights/
-├── data/
+├──app/
+    └──app.py                 ← Streamlit dashboard
+├──data/
 │   ├── raw/                  ← Kaggle CSVs (not tracked by git)
 │   └── processed/            ← Auto-generated
 ├── notebooks/
@@ -56,7 +58,6 @@ retail-insights/
 │   ├── promotion_efficiency.csv
 │   └── algorithm_comparison.csv
 ├── plots/                    ← Auto-generated figures
-├── app.py                    ← Streamlit dashboard
 ├── requirements.txt
 └── README.md
 ```
