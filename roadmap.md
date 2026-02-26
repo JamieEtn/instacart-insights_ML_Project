@@ -1,5 +1,5 @@
 # Retail Insights Project — Roadmap
-**Team of 7 | Instacart Dataset | Streamlit Dashboard**
+**Team of 6 | Instacart Dataset | Streamlit Dashboard**
 
 ---
 
@@ -10,7 +10,7 @@
 | Data Engineer | 2 people | Data pipeline, merging, cleaning |
 | Data Scientist A | 1 person | Association rules (Apriori, FP-Growth, Eclat) |
 | Data Scientist B | 1 person | Customer segmentation + UP-Tree utility mining |
-| Business Analyst | 1-2 people | Streamlit dashboard + report + demo video |
+| Business Analyst | 2 people | Streamlit dashboard + report + demo video |
 
 ---
 
