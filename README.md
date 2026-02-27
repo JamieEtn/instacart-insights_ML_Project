@@ -96,35 +96,47 @@ retail-insights/
 5. **Promotion ROI** — Targeted vs. blanket discount analysis
 
 ## Results & Recommendations
-
 1. **Customer Purchase Behavior**
-   - Average Order Time: Customers segments showed that some customers typically waited 7 days(weekly) or nearly 30 days(monthly) before their next order.
-   - Basket Size: The typical basket has between 5 - 7 items per order and they order weekly while others have 16-25 items per order and order monthly.
-   - Average spend: The RFM Model splits the customers further into 2 segments; The Champions and The Regular Buyers. The champions are high frequency, high spend while the regular buyers are high frequency, low spend.
-2. **Products & Categories**
-   - The top items added to basket were:
-         -Bananas
-         -Bag of Organic Bananas
-         -Limes
-         -Large Lemons
-         -Organic Strawberries
-         -Organic Whole Milk
-         -Organic Hass Avocado
-     These products belong to almost the same categories like fruits and vegetables.
-3. **Key Insights**
-   - For the regular buyers, you will want to use low- cost discovery offers (e.g 5% off first bundle) to progressively grow their basket size.
-   - A 'Citrus Bundle' could be created with limes and large lemons seeing as they appear in 1 of every 20 baskets. We can use this opportunity to covert the 61% who buy limes without lemons.
-   - A blanket discount applies the same 15% offer to all customers regardless of their likelihood to buy but a targetted promotion targets the segments that are most likely to increase their basket size.
-   - A 'Frequently bought together' widget on the app at check-out could remind the customers of products that are typically paired together.
-   - A structure repositioning would arrange products bundles around each other and products with low sales should be considered to be replaced by star product.
-  
+   **Order Frequency**: Segmentation analysis revealed two dominant ordering patterns: weekly shoppers (average 7-day reorder cycle) and monthly bulk buyers (approximately 30-day cycle).
+   **Basket Size**: Weekly customers typically purchase 5–7 items per order, whereas monthly customers tend to purchase 16–25 items per transaction.
+   **Customer Segments**:
+      Using RFM clustering, customers were grouped into two primary segments:
+         Champions: High frequency, high spending customers.
+         Regular Buyers: High frequency but lower spending customers.
+   These insights suggest different promotional strategies should be applied depending on customer type.
+
+2. **Product & Category Insights**
+   The most frequently purchased products include:
+      -Bananas
+      -Bag of Organic Bananas
+      -Limes
+      -Large Lemons
+      -Organic Strawberries
+      -Organic Whole Milk
+      -Organic Hass Avocado
+   These products are primarily concentrated within the Fruits and Vegetables category, highlighting strong demand for fresh produce.
+
+3. **Key Strategic Insights**
+   Targeted Growth Strategy:
+      Regular buyers should be offered low-cost discovery promotions (e.g., 5% bundle discounts) to gradually increase basket size without eroding margins.
+   Citrus Bundle Opportunity:
+      Limes and large lemons co-occur in 1 out of every 20 baskets. However, 61% of customers purchasing limes do not purchase lemons. A targeted “Citrus Bundle” could convert this missed cross-selling opportunity.
+   Targeted vs Blanket Discounting:
+      Blanket discounts (e.g., 15% for all customers) reduce margins unnecessarily. Targeted promotions directed at specific segments generate higher ROI and more efficient revenue growth.
+   Cross-Sell Optimization:
+      Implementing a “Frequently Bought Together” feature at checkout can increase cross-selling and average basket value.
+   Product Placement Strategy:
+      Reposition high-performing bundles together and phase out consistently low-performing products to optimize inventory turnover and shelf space utilization.
+
 ## Business Impact
 
-This project helps the company
- - Improve cross-sell strategies with bundles.
- - Save cost and gain a higher ROI with targeted promotions instead of the lower gain with blanket promotions.
- - Restructure the store tobring bundles together or products that are frequently bought together.
- - Analyse their customers and categorize them to know how to give promotions and and increase basket size of the regular buyers and also the champion buyers.
+   This project enables retailers to:
+      -Improve cross-sell strategies using high-lift and high-utility bundles.
+      -Increase promotion efficiency through targeted discounting.
+      -Reduce unnecessary margin erosion caused by blanket discounts.
+      -Personalize promotional strategies based on customer segmentation.
+      -Optimize product placement and category management.
+      -Overall, the findings demonstrate how data-driven retail analytics can increase basket size, improve promotional ROI, and drive sustainable revenue growth.
 
 ## License
 Educational project — DSTI 2025
