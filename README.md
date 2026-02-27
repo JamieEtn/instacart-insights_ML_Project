@@ -21,7 +21,6 @@ This creates the optimized B-Tree indexes and the product_details view.
 ### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
-python pipeline.py
 ```
 
 ### 2. Download dataset
@@ -100,7 +99,7 @@ retail-insights/
 
 1. **Customer Purchase Behavior**
    - Average Order Time: Customers segments showed that some customers typically waited 7 days(weekly) or nearly 30 days(monthly) before their next order.
-   - Basket Size: The typical basket has between 5 - 7 items per order and they order weekly while others have 16-25 items per oder and order monhly.
+   - Basket Size: The typical basket has between 5 - 7 items per order and they order weekly while others have 16-25 items per order and order monthly.
    - Average spend: The RFM Model splits the customers further into 2 segments; The Champions and The Regular Buyers. The champions are high frequency, high spend while the regular buyers are high frequency, low spend.
 2. **Products & Categories**
    - The top items added to basket were:
@@ -116,15 +115,15 @@ retail-insights/
    - For the regular buyers, you will want to use low- cost discovery offers (e.g 5% off first bundle) to progressively grow their basket size.
    - A 'Citrus Bundle' could be created with limes and large lemons seeing as they appear in 1 of every 20 baskets. We can use this opportunity to covert the 61% who buy limes without lemons.
    - A blanket discount applies the same 15% offer to all customers regardless of their likelihood to buy but a targetted promotion targets the segments that are most likely to increase their basket size.
-   - A 'Frquently bought together' widget on the app at check-out could remind the customers of products that are typically paired together.
-   - A structure repositionin would arrange products bundles around each other and products with lowsales should be considered to be replaced by star product.
+   - A 'Frequently bought together' widget on the app at check-out could remind the customers of products that are typically paired together.
+   - A structure repositioning would arrange products bundles around each other and products with low sales should be considered to be replaced by star product.
   
 ## Business Impact
 
 This project helps the company
  - Improve cross-sell strategies with bundles.
  - Save cost and gain a higher ROI with targeted promotions instead of the lower gain with blanket promotions.
- - Restructure th
+ - Restructure the store tobring bundles together or products that are frequently bought together.
  - Analyse their customers and categorize them to know how to give promotions and and increase basket size of the regular buyers and also the champion buyers.
 
 ## License
