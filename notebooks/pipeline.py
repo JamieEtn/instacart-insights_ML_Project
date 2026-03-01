@@ -1,6 +1,7 @@
 # =============================================================================
-# INSTACART ML PIPELINE — FINAL OPTIMIZED VERSION
+# INSTACART ML PIPELINE 
 # =============================================================================
+
 import os
 import time
 import warnings
@@ -16,7 +17,7 @@ warnings.filterwarnings("ignore")
 np.random.seed(42)
 
 # =============================================================================
-# CONFIG
+# CONFIGURATION
 # =============================================================================
 TOP_USERS = 5000
 TOP_PRODUCTS = 500
@@ -28,7 +29,7 @@ UTILITY_QUANTILE = 0.75
 N_CLUSTERS = 4
 
 # =============================================================================
-# FOLDERS
+# FOLDER SETUP
 # =============================================================================
 os.makedirs("data/processed", exist_ok=True)
 os.makedirs("results", exist_ok=True)
@@ -40,96 +41,57 @@ print("=" * 60)
 t0 = time.time()
 
 # =============================================================================
-# 1. LOAD DATA (MEMORY-AWARE)
+# 1. LOAD DATA
 # =============================================================================
-print("\n[1/6] Loading data...")
+print("\n[1/7] Loading data...")
 
 orders = pd.read_csv(
     "data/raw/orders.csv",
     usecols=[
-        "order_id",
-        "user_id",
-        "eval_set",
-        "order_number",
-        "order_dow",
-        "order_hour_of_day",
-        "days_since_prior_order",
-    ],
+        "order_id", "user_id", "eval_set", 
+        "order_number", "order_dow", "order_hour_of_day", "days_since_prior_order"
+    ]
 )
 
-op_prior = pd.read_csv(
-    "data/raw/order_products__prior.csv",
-    usecols=["order_id", "product_id", "reordered"],
-)
-
-op_train = pd.read_csv(
-    "data/raw/order_products__train.csv",
-    usecols=["order_id", "product_id", "reordered"],
-)
-
-products = pd.read_csv(
-    "data/raw/products.csv",
-    usecols=["product_id", "product_name", "aisle_id", "department_id"],
-)
-
+op_prior = pd.read_csv("data/raw/order_products__prior.csv", usecols=["order_id", "product_id", "reordered"])
+op_train = pd.read_csv("data/raw/order_products__train.csv", usecols=["order_id", "product_id", "reordered"])
+products = pd.read_csv("data/raw/products.csv", usecols=["product_id", "product_name", "aisle_id", "department_id"])
 aisles = pd.read_csv("data/raw/aisles.csv")
 departments = pd.read_csv("data/raw/departments.csv")
 
 print("✓ Raw data loaded")
 
 # =============================================================================
-# 2. CLEAN + MERGE
+# 2. CLEAN & MERGE
 # =============================================================================
-print("\n[2/6] Cleaning & merging...")
+print("\n[2/7] Cleaning & merging...")
 
-# Combine prior + train order-product links
+# Merge prior and train products
 order_products = pd.concat([op_prior, op_train], ignore_index=True)
 del op_prior, op_train
 
-# Keep only "active" users with enough history
-active_users = (
-    orders.groupby("user_id")["order_id"]
-    .count()
-    .loc[lambda x: x >= MIN_ORDERS_PER_USER]
-    .index
-)
+# Keep only active users with enough orders
+active_users = orders.groupby("user_id")["order_id"].count()
+active_users = active_users[active_users >= MIN_ORDERS_PER_USER].index
 orders = orders[orders["user_id"].isin(active_users)]
 
-# Focus on "train" orders (so we work on a consistent subset)
+# Focus on train set
 orders = orders[orders["eval_set"] == "train"]
-
-# Keep only lines belonging to these orders
 order_products = order_products[order_products["order_id"].isin(orders["order_id"])]
 
-# Enrich products with aisle/department names
-products = (
-    products.merge(aisles, on="aisle_id", how="left")
-    .merge(departments, on="department_id", how="left")
-)
-
+# Merge product info
+products = products.merge(aisles, on="aisle_id", how="left") \
+                   .merge(departments, on="department_id", how="left")
 products["aisle"] = products["aisle"].fillna("Unknown")
 products["department"] = products["department"].fillna("Unknown")
 
-# Master transactional dataset (one line = one product in one order)
-df = (
-    order_products.merge(
-        orders[
-            [
-                "order_id",
-                "user_id",
-                "order_dow",
-                "order_hour_of_day",
-                "days_since_prior_order",
-            ]
-        ],
-        on="order_id",
-        how="inner",
-    )
-    .merge(
-        products[["product_id", "product_name", "aisle", "department"]],
-        on="product_id",
-        how="inner",
-    )
+# Build master transactional dataset
+df = order_products.merge(
+    orders[["order_id", "user_id", "order_dow", "order_hour_of_day", "days_since_prior_order"]],
+    on="order_id", how="inner"
+).merge(
+    products[["product_id", "product_name", "aisle", "department"]],
+    on="product_id", how="left"
 )
 
 df.to_csv("data/processed/master.csv", index=False)
@@ -138,214 +100,194 @@ print(f"✓ Master dataset saved ({len(df):,} rows)")
 # =============================================================================
 # 3. ASSOCIATION RULES (FP-GROWTH)
 # =============================================================================
-print("\n[3/6] Association mining (FP-Growth)...")
+print("\n[3/7] Association rules (FP-Growth)...")
 
-# Focus on top users / products to keep it fast and interpretable
+# Focus on top users and products for speed
 top_users = df["user_id"].value_counts().head(TOP_USERS).index
 top_products = df["product_name"].value_counts().head(TOP_PRODUCTS).index
+basket_df = df[df["user_id"].isin(top_users) & df["product_name"].isin(top_products)]
 
-basket_df = df[
-    (df["user_id"].isin(top_users)) & (df["product_name"].isin(top_products))
-]
-
-# One "transaction" = one order -> list of product names
+# Aggregate transactions per order
 transactions = basket_df.groupby("order_id")["product_name"].apply(list)
 
-# One-hot encode transactions for fpgrowth
+# One-hot encode
 te = TransactionEncoder()
 basket_encoded = pd.DataFrame.sparse.from_spmatrix(
     te.fit(transactions).transform(transactions, sparse=True),
-    columns=te.columns_,
+    columns=te.columns_
 )
 
-# Frequent itemsets with FP-Growth
-freq_items = fpgrowth(
-    basket_encoded,
-    min_support=MIN_SUPPORT,
-    use_colnames=True,
-)
+# Frequent itemsets using FP-Growth
+freq_items = fpgrowth(basket_encoded, min_support=MIN_SUPPORT, use_colnames=True)
 
 if len(freq_items) > 0:
-    rules = association_rules(
-        freq_items,
-        metric="lift",
-        min_threshold=MIN_LIFT,
-    )
-
-    # Apply confidence filter and keep top rules by lift
+    rules = association_rules(freq_items, metric="lift", min_threshold=MIN_LIFT)
     rules = rules[rules["confidence"] >= MIN_CONFIDENCE]
     rules = rules.nlargest(200, "lift")
-
-    rules["antecedents_str"] = rules["antecedents"].apply(
-        lambda x: ", ".join(sorted(x))
-    )
-    rules["consequents_str"] = rules["consequents"].apply(
-        lambda x: ", ".join(sorted(x))
-    )
-
+    rules["antecedents_str"] = rules["antecedents"].apply(lambda x: ", ".join(sorted(x)))
+    rules["consequents_str"] = rules["consequents"].apply(lambda x: ", ".join(sorted(x)))
     rules.to_csv("results/association_rules.csv", index=False)
     print(f"✓ Association rules saved ({len(rules)})")
 else:
     rules = pd.DataFrame()
     print("⚠ No frequent itemsets found")
 
-# -----------------------------------------------------------------------------
-# 3b. ALGORITHM COMPARISON: FP-Growth vs Apriori
-# -----------------------------------------------------------------------------
-print("\n[3b/6] Algorithm comparison (FP-Growth vs Apriori)...")
+# =============================================================================
+# 3b. ALGORITHM TIMING COMPARISON
+# =============================================================================
+print("\n[3b/7] FP-Growth vs Apriori timing...")
 
 algo_results = []
 
-# FP-Growth timing
+# FP-Growth
 start = time.time()
 freq_fp = fpgrowth(basket_encoded, min_support=MIN_SUPPORT, use_colnames=True)
-fp_time = time.time() - start
-algo_results.append(
-    {
-        "Algorithm": "FP-Growth",
-        "Itemsets": len(freq_fp),
-        "Time (s)": round(fp_time, 2),
-    }
-)
+algo_results.append({"Algorithm": "FP-Growth", "Itemsets": len(freq_fp), "Time (s)": round(time.time() - start, 2)})
 
-# Apriori timing
+# Apriori
 start = time.time()
 freq_ap = apriori(basket_encoded, min_support=MIN_SUPPORT, use_colnames=True)
-ap_time = time.time() - start
-algo_results.append(
-    {
-        "Algorithm": "Apriori",
-        "Itemsets": len(freq_ap),
-        "Time (s)": round(ap_time, 2),
-    }
-)
+algo_results.append({"Algorithm": "Apriori", "Itemsets": len(freq_ap), "Time (s)": round(time.time() - start, 2)})
 
 pd.DataFrame(algo_results).to_csv("results/algorithm_comparison.csv", index=False)
 print("✓ Algorithm comparison saved")
 
 # =============================================================================
-# 4. UTILITY-ORIENTED PATTERNS (APPROXIMATION)
+# 4. UTILITY-ORIENTED PATTERNS
 # =============================================================================
-print("\n[4/6] Utility mining (approximate)...")
+print("\n[4/7] Utility mining approximation...")
 
-# 1) Assign a realistic price per department
-dept_prices = {
-    d: np.random.uniform(1.5, 8.0) for d in products["department"].unique()
-}
-products["est_price"] = products["department"].map(dept_prices)
+# Assign price per department (seeded for reproducibility)
+np.random.seed(101)
+dept_prices = {d: np.random.uniform(1.5, 8.0) for d in products["department"].unique()}
+products["est_price"] = products["department"].map(dept_prices).fillna(2.0)
 
 df = df.merge(products[["product_id", "est_price"]], on="product_id", how="left")
 df["est_price"] = df["est_price"].fillna(2.0)
 
-# 2) Identify "high-value" orders by total basket value
+# High-value orders
 order_value = df.groupby("order_id")["est_price"].sum()
-threshold = order_value.quantile(UTILITY_QUANTILE)
-hv_orders = order_value[order_value > threshold].index
-
+hv_threshold = order_value.quantile(UTILITY_QUANTILE)
+hv_orders = order_value[order_value > hv_threshold].index
 hv_basket = basket_df[basket_df["order_id"].isin(hv_orders)]
 
 if hv_basket["order_id"].nunique() > 100:
     hv_trans = hv_basket.groupby("order_id")["product_name"].apply(list)
-
     te2 = TransactionEncoder()
     hv_encoded = pd.DataFrame.sparse.from_spmatrix(
         te2.fit(hv_trans).transform(hv_trans, sparse=True),
-        columns=te2.columns_,
+        columns=te2.columns_
     )
-
     freq_hv = fpgrowth(hv_encoded, min_support=MIN_SUPPORT, use_colnames=True)
-
     if len(freq_hv) > 0:
-        rules_hv = association_rules(
-            freq_hv, metric="lift", min_threshold=MIN_LIFT
-        )
-
-        # Utility score = support × confidence × lift
-        rules_hv["utility_score"] = (
-            rules_hv["support"]
-            * rules_hv["confidence"]
-            * rules_hv["lift"]
-        )
-
-        rules_hv["itemset_str"] = (
-            rules_hv["antecedents"].apply(lambda x: ", ".join(sorted(x)))
-            + " → "
-            + rules_hv["consequents"].apply(lambda x: ", ".join(sorted(x)))
-        )
-
-        # Keep the top rules by utility score
+        rules_hv = association_rules(freq_hv, metric="lift", min_threshold=MIN_LIFT)
+        rules_hv["utility_score"] = rules_hv["support"] * rules_hv["confidence"] * rules_hv["lift"]
+        rules_hv["itemset_str"] = rules_hv["antecedents"].apply(lambda x: ", ".join(sorted(x))) + " → " + \
+                                  rules_hv["consequents"].apply(lambda x: ", ".join(sorted(x)))
         rules_hv = rules_hv.sort_values("utility_score", ascending=False).head(200)
-
         rules_hv.to_csv("results/utility_rules.csv", index=False)
         print(f"✓ Utility rules saved ({len(rules_hv)})")
     else:
-        print("⚠ No high-utility itemsets found (frequent itemsets empty)")
+        print("⚠ No high-utility itemsets found")
 else:
     print("⚠ Not enough high-value orders for stable utility mining")
 
 # =============================================================================
-# 5. CUSTOMER SEGMENTATION (RFM + K-MEANS)
+# 5. CUSTOMER SEGMENTATION (RFM + KMeans)
 # =============================================================================
-print("\n[5/6] Customer segmentation (RFM + KMeans)...")
+print("\n[5/7] Customer segmentation...")
 
-# RFM features
+# Frequency
 freq = orders.groupby("user_id")["order_id"].count().rename("frequency")
-rec = orders.groupby("user_id")["days_since_prior_order"].mean().rename("recency")
-mon = df.groupby("user_id")["est_price"].sum().rename("monetary")
+# Recency = days since last order
+recency = orders.groupby("user_id")["days_since_prior_order"].max().rename("recency")
+# Monetary = total spend
+monetary = df.groupby("user_id")["est_price"].sum().rename("monetary")
 
-rfm = pd.concat([freq, rec, mon], axis=1).reset_index()
+rfm = pd.concat([freq, recency, monetary], axis=1).reset_index()
 
-# Scale features (best practice before KMeans)[web:15][web:17]
+# Standardize features
 X = StandardScaler().fit_transform(rfm[["frequency", "recency", "monetary"]])
 
 kmeans = KMeans(n_clusters=N_CLUSTERS, random_state=42, n_init=10)
 rfm["segment"] = kmeans.fit_predict(X)
-
-# Simple business-friendly tag: frequent vs irregular buyers
-rfm["buyer_type"] = np.where(
-    rfm["frequency"] >= rfm["frequency"].median(), "Frequent", "Irregular"
-)
+rfm["buyer_type"] = np.where(rfm["frequency"] >= rfm["frequency"].median(), "Frequent", "Irregular")
 
 rfm.to_csv("results/customer_segments.csv", index=False)
 print("✓ Segmentation saved")
 
 # =============================================================================
+# 6. TOP PRODUCTS
+# =============================================================================
+print("\n[6/7] Top products ranking...")
+
+top_prod = df["product_name"].value_counts().head(20).reset_index()
+top_prod.columns = ["product_name", "order_count"]
+top_prod.to_csv("results/top_products.csv", index=False)
+print(f"✓ Top products saved ({len(top_prod)} products)")
+
+# =============================================================================
 # 6. REVENUE SIMULATION FROM BUNDLES
 # =============================================================================
-print("\n[6/6] Revenue simulation...")
+print("\n[7/8] Revenue simulation from bundles...")
 
-if not rules.empty:
-    # We already have rules DataFrame in memory
-    avg_order = df.groupby("order_id")["est_price"].sum().mean()
-    n_customers = rfm["user_id"].nunique()
+if 'rules_hv' in globals() and len(rules_hv) > 0:
+    bundle_revenue_data = []
+    for _, row in rules_hv.iterrows():
+        items = list(row['antecedents']) + list(row['consequents'])
+        # Total estimated price of bundle
+        bundle_price = df[df['product_name'].isin(items)].groupby('product_name')['est_price'].mean().sum()
+        # Count how many orders include all items in the bundle
+        orders_with_bundle = df.groupby('order_id')['product_name'].apply(set)
+        n_orders = orders_with_bundle.apply(lambda x: set(items).issubset(x)).sum()
+        total_revenue = bundle_price * n_orders
 
-    # Estimate how many new orders each rule could influence
-    rules["est_new_orders"] = (
-        rules["support"] * n_customers * rules["confidence"]
-    ).astype(int)
+        bundle_revenue_data.append({
+            'bundle': ", ".join(items),
+            'bundle_price': round(bundle_price, 2),
+            'n_orders': n_orders,
+            'estimated_revenue': round(total_revenue, 0)
+        })
 
-    # Revenue gain from lift, minus the cost of a 10% discount campaign
-    rules["revenue_from_lift"] = (
-        rules["est_new_orders"] * avg_order * (rules["lift"] - 1)
-    )
-    rules["discount_cost"] = rules["est_new_orders"] * avg_order * 0.10
-    rules["net_revenue_gain"] = (
-        rules["revenue_from_lift"] - rules["discount_cost"]
-    )
-
-    # Characterize bundle size and type
-    rules["bundle_size"] = (
-        rules["antecedents"].apply(len)
-        + rules["consequents"].apply(len)
-    )
-    rules["bundle_type"] = np.where(
-        rules["bundle_size"] == 2, "Simple Pair", "Multi-item Bundle"
-    )
-
-    rules.to_csv("results/revenue_simulation.csv", index=False)
-    print("✓ Revenue simulation saved")
+    revenue_df = pd.DataFrame(bundle_revenue_data)
+    revenue_df = revenue_df.sort_values('estimated_revenue', ascending=False).head(50)
+    revenue_df.to_csv("results/bundle_revenue_simulation.csv", index=False)
+    print(f"✓ Revenue simulation saved ({len(revenue_df)} bundles)")
 else:
-    print("⚠ Revenue simulation skipped (no association rules)")
+    print("⚠ No high-utility rules available for revenue simulation")
 
-print("\n PIPELINE COMPLETE")
+# =============================================================================
+# 7. PROMOTION EFFICIENCY
+# =============================================================================
+print("\n[8/8] Promotion efficiency...")
+
+promo_data = []
+for seg in rfm["segment"].unique():
+    seg_users = rfm[rfm["segment"] == seg]
+    n_cust = len(seg_users)
+    avg_spend = seg_users["monetary"].mean()
+    
+    blanket_cost = n_cust * avg_spend * 0.15
+    targeted_cost = blanket_cost * 0.67
+    targeted_gain = blanket_cost * 1.25
+    advantage = (targeted_gain - targeted_cost) - (-blanket_cost)  # improvement over blanket
+
+    promo_data.append({
+        "segment": f"Segment {seg}",
+        "customers": n_cust,
+        "avg_spend": round(avg_spend, 1),
+        "blanket_cost": round(blanket_cost, 0),
+        "targeted_cost": round(targeted_cost, 0),
+        "targeted_gain": round(targeted_gain, 0),
+        "advantage": round(advantage, 0)
+    })
+
+promo_df = pd.DataFrame(promo_data)
+promo_df.to_csv("results/promotion_efficiency.csv", index=False)
+print("✓ Promotion efficiency saved")
+
+# =============================================================================
+# PIPELINE COMPLETE
+# =============================================================================
+print("\nPIPELINE COMPLETE")
 print(f"⏱ Total time: {time.time() - t0:.1f}s")
