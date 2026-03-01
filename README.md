@@ -28,7 +28,6 @@ Before running the code, you must initialize the database:
 * **Customer Segmentation** — RFM features + KMeans clustering
 * **Revenue Simulation** — Evaluate financial impact of product bundles
 * **Promotion ROI** — Compare targeted vs. blanket discounts
->>>>>>> e746611a (Refactor app structure and update dataset files)
 
 ---
 
