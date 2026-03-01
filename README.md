@@ -166,8 +166,6 @@ retail-insights/
    - Personalize promotional strategies based on customer segmentation.
    - Optimize product placement and category management.
   Overall, the findings demonstrate how data-driven retail analytics can increase basket size, improve promotional ROI, and drive sustainable revenue growth.
-=======
----
 
 ## License
 
