@@ -10,21 +10,21 @@ This project analyzes 3M+ grocery orders to provide actionable recommendations f
 - **Revenue Simulation** from data-driven product bundles
 - **Promotion ROI** — targeted vs. blanket discounts
 
-- # 🛒 Grocery Store Data Analysis
+- # Grocery Store Data Analysis
 
-### 📝 What I Did
+### What I Did
 I analyzed a dataset of 50,000 orders to understand customer behavior. Using Python and SQL, I calculated which products are most popular and which departments see the most traffic.
 
-### 💡 Key Insights
+### Key Insights
 * **Customer Loyalty:** 60% of top-selling items are organic.
 * **Basket Size:** Most customers buy between 5 and 10 items per trip.
 * **Top Department:** The Produce department accounts for the highest volume of sales.
 
-### 📁 How to navigate this project
+### How to navigate this project
 * All raw and cleaned data can be found in the [data folder](./data)
 
 ## Quick Start
-🛠️ Step 0: Database Infrastructure
+Step 0: Database Infrastructure
 Before running the code, you must initialize the database:
 
 Open your Supabase SQL Editor.
