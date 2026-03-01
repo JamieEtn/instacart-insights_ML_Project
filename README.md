@@ -170,7 +170,6 @@ retail-insights/
   Overall, the findings demonstrate how data-driven retail analytics can increase basket size, improve promotional ROI, and drive sustainable revenue growth.
 =======
 ---
->>>>>>> e746611a (Refactor app structure and update dataset files)
 
 ## License
 
