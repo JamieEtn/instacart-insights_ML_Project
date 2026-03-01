@@ -10,8 +10,7 @@ This project analyzes **3M+ grocery orders** to provide actionable recommendatio
 
 - # Grocery Store Data Analysis
 
-### What I Did
-I analyzed a dataset of 50,000 orders to understand customer behavior. Using Python and SQL, I calculated which products are most popular and which departments see the most traffic.
+Analyzed a dataset of 50,000 orders to understand customer behavior. Using Python and SQL, Calculated which products are most popular and which departments see the most traffic.
 
 ### Key Insights
 * **Customer Loyalty:** 60% of top-selling items are organic.
@@ -131,7 +130,7 @@ retail-insights/
 4. **Revenue Simulation** — Bundle ROI calculator with adjustable sliders
 5. **Promotion ROI** — Targeted vs. blanket discount analysis
 
-<<<<<<< HEAD
+
 ## Results & Recommendations
 1. **Customer Purchase Behavior**
    - **Order Frequency**: Segmentation analysis revealed two dominant ordering patterns: weekly shoppers (average 7-day reorder cycle) and monthly bulk buyers (approximately 30-day cycle).
