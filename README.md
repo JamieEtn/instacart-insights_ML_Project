@@ -8,7 +8,6 @@
 
 This project analyzes **3M+ grocery orders** to provide actionable recommendations for retailers:
 
-<<<<<<< HEAD
 - # Grocery Store Data Analysis
 
 ### What I Did
