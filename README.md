@@ -21,8 +21,7 @@ I analyzed a dataset of 50,000 orders to understand customer behavior. Using Pyt
 * **Top Department:** The Produce department accounts for the highest volume of sales.
 
 ### 📁 How to navigate this project
-* All raw and cleaned data can be found in the [data folder](./data).
-* All charts and graphs are located in the [visuals folder](./visuals).
+* All raw and cleaned data can be found in the [data folder](./data)
 
 ## Quick Start
 🛠️ Step 0: Database Infrastructure
